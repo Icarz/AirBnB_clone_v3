@@ -29,7 +29,14 @@ class User(BaseModel, Base):
         super().__init__(*args, **kwargs)
 
     def __setattr__(self, name, value):
+<<<<<<< HEAD
         """Sets a password with md5 encryption"""
         if name == "password":
             value = md5(value.encode()).hexdigest()
         super().__setattr__(name, value)  # Fix missing super call
+=======
+        """sets a password with md5 encryption"""
+        if name == "password":
+            value = md5(value.encode()).hexdigest()
+        super().__setattr__(name, value)
+>>>>>>> 2a59ab0... update
