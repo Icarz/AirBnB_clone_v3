@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 """This module defines a class to manage database storage for hbnb clone"""
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from os import getenv
@@ -20,7 +21,9 @@ class DBStorage:
         HBNB_ENV = getenv("HBNB_ENV")
 
         self.__engine = create_engine(
-            f"mysql+mysqldb://{HBNB_MYSQL_USER}:{HBNB_MYSQL_PWD}@{HBNB_MYSQL_HOST}/{HBNB_MYSQL_DB}",
+            "mysql+mysqldb://{0}:{1}@{2}/{3}".format(
+                HBNB_MYSQL_USER, HBNB_MYSQL_PWD, HBNB_MYSQL_HOST, HBNB_MYSQL_DB
+            ),
             pool_pre_ping=True
         )
 
@@ -28,7 +31,8 @@ class DBStorage:
             Base.metadata.drop_all(self.__engine)
 
     def all(self, cls=None):
-        """Returns a dictionary of all objects of a given class, or all objects if cls is None"""
+        """Returns a dictionary of all objects of a given class,
+        or all objects if cls is None"""
         from models.state import State
         from models.city import City
         from models.user import User
@@ -36,18 +40,20 @@ class DBStorage:
         from models.review import Review
         from models.amenity import Amenity
 
-        classes = {"State": State, "City": City, "User": User,
-                   "Place": Place, "Review": Review, "Amenity": Amenity}
+        classes = {
+            "State": State, "City": City, "User": User,
+            "Place": Place, "Review": Review, "Amenity": Amenity
+        }
 
         objects = {}
         if cls is None:
             for model in classes.values():
                 for obj in self.__session.query(model).all():
-                    key = f"{obj.__class__.__name__}.{obj.id}"
+                    key = "{0}.{1}".format(obj.__class__.__name__, obj.id)
                     objects[key] = obj
         else:
             for obj in self.__session.query(cls).all():
-                key = f"{obj.__class__.__name__}.{obj.id}"
+                key = "{0}.{1}".format(obj.__class__.__name__, obj.id)
                 objects[key] = obj
         return objects
 
@@ -74,7 +80,9 @@ class DBStorage:
         from models.amenity import Amenity
 
         Base.metadata.create_all(self.__engine)
-        session_factory = sessionmaker(bind=self.__engine, expire_on_commit=False)
+        session_factory = sessionmaker(
+            bind=self.__engine, expire_on_commit=False
+        )
         self.__session = scoped_session(session_factory)
 
     def close(self):
@@ -91,7 +99,6 @@ class DBStorage:
     def count(self, cls=None):
         """Count the number of objects in storage"""
         if cls is None:
-            return sum(self.__session.query(model).count() for model in Base.__subclasses__())
+            return sum(self.__session.query(model).count()
+                       for model in Base.__subclasses__())
         return self.__session.query(cls).count()
-
-
